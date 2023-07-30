@@ -13,8 +13,8 @@ class StockService (val stockRepository: StockRepository) {
      *  Synchronized 문제점
      *  - 서버가 한대일 때만 동시성 제어를 보장한다. 멀티서버에서는 보장 못함
      */
-    // @Transactional
-    @Synchronized
+     @Transactional()
+//    @Synchronized
     fun  decrease(id: Long, quantity: Long) {
         val stock: Stock = stockRepository.findById(id).orElseThrow()
 

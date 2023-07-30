@@ -1,4 +1,4 @@
-package com.example.stock.service
+package com.example.stock.facade
 
 import com.example.stock.domain.Stock
 import com.example.stock.repository.StockRepository
@@ -8,9 +8,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import java.lang.RuntimeException
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.Executor
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 @SpringBootTest
@@ -18,10 +17,9 @@ import java.util.concurrent.Executors
  * No ParameterResolver registered for parameter
  * 생성자를 통한 의존성 주입 방식을 사용하는 경우, 생성자에 @Autowired 어노테이션을 명시해야 한다.
  */
-class StockServiceTest @Autowired constructor(
+class NamedLockStockFacadeTest @Autowired constructor(
 
-    private val stockService: StockService,
-    private val pessimisticLockStockService: PessimisticLockStockService,
+    private val namedLockStockFacade: NamedLockStockFacade,
     private val stockRepository: StockRepository
 ){
     @BeforeEach
@@ -37,15 +35,6 @@ class StockServiceTest @Autowired constructor(
     }
 
     @Test
-    fun stock_decrease() {
-        stockService.decrease(id = 1, quantity = 1)
-
-        val stock = stockRepository.findById(1).orElseThrow()
-
-        assertEquals(99, stock.quantity)
-    }
-
-    @Test
     fun concurrency_100() {
         val threadCount: Int = 100
         // Executors: 비동기 실행 작업을 단순화하여 사용할 수 있게 해줌
@@ -53,10 +42,10 @@ class StockServiceTest @Autowired constructor(
         val executorService = Executors.newFixedThreadPool(32)
         val latch = CountDownLatch(threadCount) // 100개의 스레드가 모두 종료될 때까지 기다림
 
-        for(i: Int in 1..threadCount) {
+        for (i: Int in 1..threadCount) {
             executorService.submit {
                 try {
-                    pessimisticLockStockService.decrease(id = 1, quantity = 1)
+                    namedLockStockFacade.decrease(id = 1, quantity = 1)
                 } finally {
                     latch.countDown() // latch의 값을 100에서부터 1씩 감소시킴
                 }
