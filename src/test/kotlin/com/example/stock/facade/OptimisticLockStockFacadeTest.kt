@@ -18,7 +18,6 @@ import java.util.concurrent.Executors
  * 생성자를 통한 의존성 주입 방식을 사용하는 경우, 생성자에 @Autowired 어노테이션을 명시해야 한다.
  */
 class OptimisticLockStockFacadeTest @Autowired constructor(
-
     private val optimisticLockStockFacade: OptimisticLockStockFacade,
     private val stockRepository: StockRepository
 ){

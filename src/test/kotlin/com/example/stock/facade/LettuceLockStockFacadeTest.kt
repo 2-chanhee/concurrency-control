@@ -1,6 +1,7 @@
 package com.example.stock.facade
 
 import com.example.stock.domain.Stock
+import com.example.stock.repository.RedisLockRepository
 import com.example.stock.repository.StockRepository
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
@@ -11,16 +12,13 @@ import org.springframework.boot.test.context.SpringBootTest
 import java.lang.RuntimeException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
+import kotlin.jvm.Throws
 
 @SpringBootTest
-/**
- * No ParameterResolver registered for parameter
- * 생성자를 통한 의존성 주입 방식을 사용하는 경우, 생성자에 @Autowired 어노테이션을 명시해야 한다.
- */
-class NamedLockStockFacadeTest @Autowired constructor(
-    private val namedLockStockFacade: NamedLockStockFacade,
+class LettuceLockStockFacadeTest @Autowired constructor (
+    private val lettuceLockStockFacade: LettuceLockStockFacade,
     private val stockRepository: StockRepository
-){
+) {
     @BeforeEach
     fun before() {
         val stock = Stock(productId = 1, quantity = 100)
@@ -34,6 +32,7 @@ class NamedLockStockFacadeTest @Autowired constructor(
     }
 
     @Test
+    @Throws(InterruptedException::class)
     fun concurrency_100() {
         val threadCount: Int = 100
         // Executors: 비동기 실행 작업을 단순화하여 사용할 수 있게 해줌
@@ -44,8 +43,8 @@ class NamedLockStockFacadeTest @Autowired constructor(
         for (i: Int in 1..threadCount) {
             executorService.submit {
                 try {
-                    namedLockStockFacade.decrease(id = 1, quantity = 1)
-                } finally {
+                    lettuceLockStockFacade.decrease(id = 1, quantity = 1)
+                } catch (e: InterruptedException) { throw RuntimeException(e) }  finally {
                     latch.countDown() // latch의 값을 100에서부터 1씩 감소시킴
                 }
             }
