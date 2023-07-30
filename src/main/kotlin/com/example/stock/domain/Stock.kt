@@ -6,6 +6,7 @@ import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
+import javax.persistence.Version
 
 @Entity
 class Stock (
@@ -16,7 +17,10 @@ class Stock (
         @Column(name = "productId")
         val productId: Long,
         @Column(name = "quantity")
-        var quantity: Long) : MutableIterable<Any> {
+        var quantity: Long,
+        @Version
+        var version: Long = 1L
+    ) : MutableIterable<Any> {
     // 재고 감소
     fun decrease(requestQuantity: Long) {
         if((this.quantity - requestQuantity) < 0) {
